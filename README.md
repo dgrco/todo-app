@@ -30,6 +30,7 @@ A Todo App that is simple, yet is actually useful.
 `todo sort` - Sorts todos such that the completed todos will be positioned last.
 
 **Help/Documentation**
+
 `todo help` - Lists actions and parameters to those actions.
 
 ## Install
