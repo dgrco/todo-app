@@ -220,21 +220,23 @@ add <items...>
         Add item(s) to the todo list
 
 list
-        Print the todo list
+        Print the todo list. Use the numeric positions listed for commands with <item_positions...> parameters
 
-remove <items...> | \"all\" | \"checked\" | \"completed\"
+remove <item_positions...> | \"all\" | \"checked\" | \"completed\"
         Remove item(s) from the todo list
 
 clear
         Clears all items from the todo list (equivalent to \"remove all\")
 
-check <items...> | \"all\" 
+check <item_positions...> | \"all\" 
         Mark item(s) as completed
 
-uncheck <items...> | \"all\" 
+uncheck <item_positions...> | \"all\" 
         Mark item(s) as incomplete
 
 sort 
-        Sort items such that completed items appear last");
+        Sort items such that completed items appear last
+
+Any parameters with <...> signify that you can use multiple space-separated parameters.");
 }
 
