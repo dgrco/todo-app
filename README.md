@@ -3,30 +3,34 @@
 A Todo App that is simple, yet is actually useful.
 
 ## Features
-- Adding/Removing Todos
+**Adding/Removing Todos**
 
 `todo add "first todo" "second todo" todo3 todo4`
 
 `todo remove 2 3` (remove specific todos),  `todo remove all`, `todo remove checked` (or `todo remove completed`)
 
+`todo clear` - Equivalent to `todo remove all`
 
-- Listing Todos
+**Listing Todos**
 
 `todo list` - All todos have a checkbox. Completed todos will have this checkbox checked, and will be colored green.
 
 (This command is useful for identifying the positions of todos that is used in position-specific commands.)
 
 
-- Checking/Unchecking Todos
+**Checking/Unchecking Todos**
 
 `todo check 1 2` (checking specific todos), `todo check all`
 
 `todo uncheck 1 2` (unchecking specific todos), `todo uncheck all`
 
 
-- Sorting Todos
+**Sorting Todos**
 
 `todo sort` - Sorts todos such that the completed todos will be positioned last.
+
+**Help/Documentation**
+`todo help` - Lists actions and parameters to those actions.
 
 ## Install
 To install this program, you should have Cargo installed (via rustup or by other means).

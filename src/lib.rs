@@ -24,7 +24,8 @@ pub fn run(action: &String, params: Vec<String>) {
         "check" => check_items(&mut todo_data, params, &data_path),
         "uncheck" => uncheck_items(&mut todo_data, params, &data_path),
         "sort" => sort_items(&mut todo_data, params, &data_path),
-        _ => {}
+        "help" => show_help(),
+        _ => println!("Invalid action: {action}"),
     }
 }
 
@@ -211,3 +212,29 @@ fn write_data(data: &Vec<Todo>, data_path: &String) {
         process::exit(1);
     });
 }
+
+/// Print the help information
+fn show_help() {
+    println!("
+add <items...>
+        Add item(s) to the todo list
+
+list
+        Print the todo list
+
+remove <items...> | \"all\" | \"checked\" | \"completed\"
+        Remove item(s) from the todo list
+
+clear
+        Clears all items from the todo list (equivalent to \"remove all\")
+
+check <items...> | \"all\" 
+        Mark item(s) as completed
+
+uncheck <items...> | \"all\" 
+        Mark item(s) as incomplete
+
+sort 
+        Sort items such that completed items appear last");
+}
+
