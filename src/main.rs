@@ -1,4 +1,4 @@
-use std::{env, process};
+use std::env;
 
 fn main() {
     let mut args = env::args();
@@ -12,8 +12,8 @@ fn main() {
     match args.next() {
         Some(a) => { action = a; },
         None => {
-            eprintln!("ERROR: No arguments passed, you must provide an action.");
-            process::exit(1);
+            // Make listing the todos the default action
+            action = "list".to_string();
         }
     }
 

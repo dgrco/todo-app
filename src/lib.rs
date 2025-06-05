@@ -175,6 +175,11 @@ fn sort_items(data: &mut Vec<Todo>, _params: Vec<String>, data_path: &String) {
 
 /// Print the todo list
 fn print_list(data: &Vec<Todo>) {
+    if data.len() == 0 {
+        println!("Nothing to do!\n\nRun `todo help` for help.");
+        return;
+    }
+
     for (i, item) in data.iter().enumerate() {
         println!(
             "{}",
