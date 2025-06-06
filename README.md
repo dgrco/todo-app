@@ -3,13 +3,15 @@
 A Todo App that is simple, yet is actually useful.
 
 ## Features
-**Adding/Removing Todos**
+**Adding/Removing/Editing Todos**
 
 `todo add "first todo" "second todo" todo3 todo4`
 
 `todo remove 2 3` (remove specific todos),  `todo remove all`, `todo remove checked` (or `todo remove completed`)
 
 `todo clear` - Equivalent to `todo remove all`
+
+`todo edit 1 2 3` - Edit items 1, 2, and 3.
 
 **Listing Todos**
 

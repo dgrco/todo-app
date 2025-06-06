@@ -1,8 +1,9 @@
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::io::Write;
 use std::path::PathBuf;
-use std::{fs, process};
+use std::{fs, io, process};
 
 const DATA_FILE_NAME: &'static str = "todo.dat";
 
@@ -62,6 +63,12 @@ pub fn run(action: &String, params: Vec<String>) {
             }
         }
         "set" => set_setting(&mut settings, params),
+        "edit" => {
+            edit_item(&mut todo_data, params, &data_path);
+            if settings.silent == "off" {
+                print_list(&todo_data);
+            }
+        }
         "help" => show_help(),
         _ => println!("Invalid action: {action}"),
     }
@@ -266,6 +273,9 @@ fn show_help() {
 add <items...>
         Add item(s) to the todo list
 
+edit <item_positions...>
+        Edit item(s) in the todo list
+
 list
         Print the todo list. Use the numeric positions listed for commands with <item_positions...> parameters
 
@@ -396,6 +406,42 @@ Commands:"
             );
         }
     }
+}
+
+/// Edit an item
+fn edit_item(data: &mut Vec<Todo>, params: Vec<String>, data_path: &String) {
+    if params.len() == 0 {
+        eprintln!("ERROR: Invalid use of `edit`. See `todo help` for options");
+        process::exit(1);
+    }
+
+    let positions: Vec<usize> = params
+        .iter()
+        .map(|s| s.parse::<usize>().unwrap_or_else(|err| {
+            eprintln!("ERROR: Cannot convert position string \"{s}\" into a valid position value: {err}");
+            process::exit(1);
+        })).collect();
+
+    for pos in positions {
+        if pos <= data.len() {
+            let original = &data[pos - 1];
+            println!("Original: {}", original.label);
+
+            print!("New: ");
+            io::stdout().flush().expect("Failed to flush stdout");
+
+            let mut buffer = String::new();
+            let stdin = io::stdin();
+            stdin.read_line(&mut buffer).unwrap_or_else(|err| {
+                eprintln!("ERROR: Could not read user input: {err}");
+                process::exit(1);
+            });
+
+            data[pos - 1].label = buffer.trim_end().to_string();
+        }
+    }
+
+    write_data(data, data_path);
 }
 
 /// Write settings to disk.
