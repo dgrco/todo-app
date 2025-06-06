@@ -8,7 +8,6 @@ fn main() {
     // Skip binary name argument 
     args.next();
 
-    // NOTE: may eventually make no arguments default to the "list" command
     match args.next() {
         Some(a) => { action = a; },
         None => {

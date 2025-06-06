@@ -1,5 +1,6 @@
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{fs, process};
 
@@ -11,19 +12,56 @@ struct Todo {
     complete: bool,
 }
 
+#[derive(Serialize, Deserialize)]
+struct Settings {
+    silent: String,
+}
+
 /// Run the todo app.
 /// @param action - The action string chosen by the user.
 /// @param params - Any parameters passed after the action.
 pub fn run(action: &String, params: Vec<String>) {
+    let mut settings = extract_settings();
     let (data_path, mut todo_data) = read_to_vec(dirs::data_dir());
     match action.as_str() {
-        "add" => add_items(&mut todo_data, params, &data_path),
+        "add" => {
+            add_items(&mut todo_data, params, &data_path);
+            if settings.silent == "off" {
+                print_list(&todo_data);
+            }
+        }
         "list" => print_list(&todo_data),
-        "remove" => remove_items(&mut todo_data, params, &data_path),
-        "clear" => remove_items(&mut todo_data, vec!["all".to_string()], &data_path),
-        "check" => check_items(&mut todo_data, params, &data_path),
-        "uncheck" => uncheck_items(&mut todo_data, params, &data_path),
-        "sort" => sort_items(&mut todo_data, params, &data_path),
+        "remove" => {
+            remove_items(&mut todo_data, params, &data_path);
+            if settings.silent == "off" {
+                print_list(&todo_data);
+            }
+        }
+        "clear" => {
+            remove_items(&mut todo_data, vec!["all".to_string()], &data_path);
+            if settings.silent == "off" {
+                print_list(&todo_data);
+            }
+        }
+        "check" => {
+            check_items(&mut todo_data, params, &data_path);
+            if settings.silent == "off" {
+                print_list(&todo_data);
+            }
+        }
+        "uncheck" => {
+            uncheck_items(&mut todo_data, params, &data_path);
+            if settings.silent == "off" {
+                print_list(&todo_data);
+            }
+        }
+        "sort" => {
+            sort_items(&mut todo_data, params, &data_path);
+            if settings.silent == "off" {
+                print_list(&todo_data);
+            }
+        }
+        "set" => set_setting(&mut settings, params),
         "help" => show_help(),
         _ => println!("Invalid action: {action}"),
     }
@@ -184,17 +222,9 @@ fn print_list(data: &Vec<Todo>) {
         println!(
             "{}",
             if item.complete {
-                format!(
-                    "☑ {}: {}",
-                    i + 1,
-                    item.label
-                ).green()
+                format!("☑ {}: {}", i + 1, item.label).green()
             } else {
-                format!(
-                    "☐ {}: {}",
-                    i + 1,
-                    item.label
-                ).white()
+                format!("☐ {}: {}", i + 1, item.label).white()
             }
         );
     }
@@ -242,6 +272,123 @@ uncheck <item_positions...> | \"all\"
 sort 
         Sort items such that completed items appear last
 
-Any parameters with <...> signify that you can use multiple space-separated parameters.");
+set(?) <setting> <option>
+        Change config setting to have value <option>
+
+Any parameters with <...> signify that you can use multiple space-separated parameters.
+Any action marked with a (?) has further documentation (i.e, run `todo set help`");
 }
 
+/// Extract settings from config file.
+/// If a config doesn't exist, make one.
+fn extract_settings() -> Settings {
+    let mut config_path = dirs::config_dir().unwrap_or_else(|| {
+        eprintln!("ERROR: Could not find config directory.");
+        process::exit(1);
+    });
+
+    config_path.push("todo-app");
+
+    fs::create_dir_all(&config_path).unwrap_or_else(|err| {
+        eprintln!("ERROR: Could not create config file: {err}");
+        process::exit(1);
+    });
+
+    config_path.push("settings.json");
+
+    if config_path.exists() {
+        let settings_str = fs::read_to_string(config_path).unwrap();
+        let settings: Settings = serde_json::from_str(&settings_str).unwrap_or_else(|err| {
+            eprintln!("ERROR: Could not parse settings file: {err}");
+            process::exit(1);
+        });
+        return settings;
+    }
+
+    let settings = Settings {
+        silent: String::from("off"),
+    };
+    write_settings(&config_path, &settings);
+    settings
+}
+
+fn set_setting(settings: &mut Settings, params: Vec<String>) {
+    let setting_choices = vec![(
+        "silent",
+        vec![String::from("on"), String::from("off")],
+        "Don't print the todo list after each mutation command (Default = off)",
+    )];
+
+    if params.len() >= 1 && params[0] == "help" {
+        print_setting_help(setting_choices);
+        return;
+    }
+
+    let mut setting_map = HashMap::from([("silent", &mut settings.silent)]);
+
+    if params.len() != 2 {
+        eprintln!("ERROR: Parameter format is incorrect.\nUsage: todo set <setting> <value>");
+        process::exit(1);
+    }
+
+    let mut success = false;
+
+    for opt in setting_choices {
+        if opt.0 == params[0] {
+            if opt.1.contains(&params[1]) {
+                let setting = setting_map.get_mut(opt.0).unwrap();
+                setting.clear();
+                setting.push_str(&params[1]);
+                success = true;
+            }
+        }
+    }
+
+    if !success {
+        eprintln!(
+            "ERROR: Failed to change setting \"{}\" to option \"{}\", setting or option doesn't exist.",
+            params[0], params[1]
+        );
+        process::exit(1);
+    }
+
+    let mut settings_path = dirs::config_dir().unwrap();
+    settings_path.push("todo-app/settings.json");
+    write_settings(&settings_path, settings);
+
+    println!(
+        "Successfully changed setting \"{}\" to \"{}\".",
+        params[0], params[1]
+    );
+}
+
+/// Show help for settings
+fn print_setting_help(setting_choices: Vec<(&'static str, Vec<String>, &'static str)>) {
+    println!(
+        "Change settings with \"todo set <setting> <option>\".
+Commands:"
+    );
+    for setting in setting_choices {
+        print!("\t{} <", setting.0);
+        for (i, opt) in setting.1.iter().enumerate() {
+            print!(
+                "{}{}",
+                opt,
+                if i < setting.1.len() - 1 {
+                    " | ".to_string()
+                } else {
+                    format!(">\t{}\n", setting.2)
+                }
+            );
+        }
+    }
+}
+
+/// Write settings to disk.
+fn write_settings(path: &PathBuf, settings: &Settings) {
+    let settings_str = serde_json::to_string(&settings).unwrap();
+    fs::write(path, settings_str).unwrap_or_else(|err| {
+        eprintln!("ERROR: Could not create the config file: {err}");
+        process::exit(1);
+    });
+}
