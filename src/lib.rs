@@ -120,6 +120,10 @@ fn add_items(data: &mut Vec<Todo>, params: Vec<String>, data_path: &String) {
 /// Remove items from the todo list.
 /// Items are specified by their position (as shown in "todo list" command) or with "all".
 fn remove_items(data: &mut Vec<Todo>, params: Vec<String>, data_path: &String) {
+    if params.len() == 0 {
+        eprintln!("ERROR: Invalid use of `remove`. See `todo help` for options");
+        process::exit(1);
+    }
     if params[0] == "all" {
         data.clear();
         write_data(data, data_path);
@@ -152,6 +156,10 @@ fn remove_items(data: &mut Vec<Todo>, params: Vec<String>, data_path: &String) {
 
 /// Check items in the todo list.
 fn check_items(data: &mut Vec<Todo>, params: Vec<String>, data_path: &String) {
+    if params.len() == 0 {
+        eprintln!("ERROR: Invalid use of `check`. See `todo help` for options");
+        process::exit(1);
+    }
     if params[0] == "all" {
         for item in data.iter_mut() {
             item.complete = true;
@@ -179,6 +187,10 @@ fn check_items(data: &mut Vec<Todo>, params: Vec<String>, data_path: &String) {
 
 /// Uncheck items in the todo list.
 fn uncheck_items(data: &mut Vec<Todo>, params: Vec<String>, data_path: &String) {
+    if params.len() == 0 {
+        eprintln!("ERROR: Invalid use of `uncheck`. See `todo help` for options");
+        process::exit(1);
+    }
     if params[0] == "all" {
         for item in data.iter_mut() {
             item.complete = false;
@@ -327,7 +339,9 @@ fn set_setting(settings: &mut Settings, params: Vec<String>) {
     let mut setting_map = HashMap::from([("silent", &mut settings.silent)]);
 
     if params.len() != 2 {
-        eprintln!("ERROR: Parameter format is incorrect.\nUsage: todo set <setting> <value>");
+        eprintln!(
+            "ERROR: Parameter format is incorrect. See `todo set help` for information.\nUsage: todo set <setting> <value>"
+        );
         process::exit(1);
     }
 
