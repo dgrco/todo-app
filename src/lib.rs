@@ -298,7 +298,7 @@ set(?) <setting> <option>
         Change config setting to have value <option>
 
 Any parameters with <...> signify that you can use multiple space-separated parameters.
-Any action marked with a (?) has further documentation (i.e, run `todo set help`");
+Any action marked with a (?) has further documentation (i.e, run `todo set help`)");
 }
 
 /// Extract settings from config file.
